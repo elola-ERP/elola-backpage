@@ -1,7 +1,27 @@
-// import { GetServerSideProps } from "next";
-// import { getSession } from 'next-auth/react';
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { checkAuth } from '../../store/auth';
 
 export default function DashboardHome() {
+    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+    const dispatch = useDispatch();
+    const router = useRouter();
+
+    useEffect(() => {
+        dispatch(checkAuth());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!isLoggedIn) {
+            router.push('/login');
+        }
+    }, [isLoggedIn, router]);
+
+    if (!isLoggedIn) {
+        return null; // or a loading spinner
+    }
+    
     return (
         <div className="w-full h-full flex flex-col justify-center items-center text-purple-1 pt-80">
             <svg 
@@ -19,9 +39,3 @@ export default function DashboardHome() {
         </div>
     );
 }
-
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//     const session = await getSession(context);
-
-
-// }

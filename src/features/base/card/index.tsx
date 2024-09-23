@@ -15,3 +15,18 @@ export function Card(props: CardProps) {
     </div>
   );
 }
+
+export function LoginCard(props: CardProps) {
+  const { children, className, ...rest } = props;
+  return (
+    <div
+      className={twMerge(
+        "p-4 w-full border-t border-b border-white/50",
+        className
+      )}
+      {...rest}
+    >
+      {children}
+    </div>
+  );
+}

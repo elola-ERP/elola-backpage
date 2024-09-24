@@ -34,6 +34,7 @@ export const loginUser = (email: string, password: string) => async (dispatch: A
 };
 
 export const logoutUser = () => (dispatch: AppDispatch) => {
+    console.log("button clicked");
     Cookies.remove('authToken');
     dispatch(logout());
 };

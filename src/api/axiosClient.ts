@@ -1,4 +1,3 @@
-import { token } from "../config";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -15,11 +14,9 @@ export const axiosInstance = axios.create({
 console.log(axiosInstance)
 axiosInstance.interceptors.request.use(
     (config) => {
-        const auth = Cookies.get(token);
-        // const token = localStorage.getItem('authToken');
+        const token = Cookies.get('authToken');
 
-        if (auth) { config.headers.Authorization = `Bearer ${auth}`;
-        console.log('Token is saved:', auth);
+        if (token) { config.headers.Authorization = `Bearer ${token}`;
         }  else {
             console.warn("token not found")
         } 

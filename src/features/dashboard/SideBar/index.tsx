@@ -407,7 +407,7 @@ export default function SideBar() {
             </div>
 
             {/* LOGOUT */}
-            <div className={`fixed bottom-0 items-end justify-start pt-24 p-6 transition-all duration-300
+            <div className={`fixed bottom-0 items-end justify-start pt-24 p-6 transition-all duration-300 z-50
             ${ isCollapsed ? 'w-[100px]' : 'w-[300px]'}`}>
                 
                 <Button 

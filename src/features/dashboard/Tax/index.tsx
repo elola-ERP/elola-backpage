@@ -2,10 +2,12 @@ import { axiosInstance } from "@/src/api/axiosClient";
 import { Button } from "@/src/features";
 import Loader from "../../base/Loader";
 import { AddModal, EditModal, DeleteModal, TaxTable } from "./components";
-import { Pagination } from "@/src/features"
+import { Pagination } from "@/src/features";
 import { useTaxPageHooks } from "./hooks";
+import { wrapper } from "@/src/store";
+import { fetchTaxesServerSide } from "@/src/store/taxSlice";
 
-export default function TaxPage() { 
+export default function TaxPage() {
     const {
         taxes,
         currentPage,
@@ -27,41 +29,40 @@ export default function TaxPage() {
         setIsSecondModalOpen,
         handleModalClose,
         handleInputChange,
-        } = useTaxPageHooks();
+    } = useTaxPageHooks();
 
     const handleConfirmAdd = async () => {
         if (!validateForm()) return;
 
         try {
             const { tax_id, ...dataToSend } = formData;
-            console.log("Sending data:", dataToSend);
             await axiosInstance.post(`/tax`, dataToSend);
             await fetchTaxes();
-            handleModalClose(); 
-            setIsAddModalOpen(false); 
-            setIsSecondModalOpen(true); 
+            handleModalClose();
+            setIsAddModalOpen(false);
+            setIsSecondModalOpen(true);
         } catch (error) {
             console.error("Error adding tax", error);
         }
     };
-    
+
     const handleConfirmEdit = async () => {
         try {
             const { tax_id, ...dataToSend } = formData;
             if (selectedTax) {
                 await axiosInstance.patch(`/tax/${selectedTax.tax_id}`, dataToSend);
-                await fetchTaxes(); 
+                await fetchTaxes();
                 handleModalClose();
             }
         } catch (error) {
             console.error("Error editing tax", error);
         }
     };
-    
+
     const handleConfirmDelete = async () => {
         try {
             if (selectedTax) {
-                await axiosInstance.delete(`/tax/${selectedTax.tax_id}`); 
+                await axiosInstance.delete(`/tax/${selectedTax.tax_id}`);
                 await fetchTaxes();
                 handleModalClose();
             }
@@ -69,7 +70,7 @@ export default function TaxPage() {
             console.error("Error deleting tax", error);
         }
     };
-    
+
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         fetchTaxes(page);
@@ -89,9 +90,9 @@ export default function TaxPage() {
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl text-gray-2 font-semibold">Tax and Service Data</h2>
                         {/* PAGE */}
-                        <Pagination 
-                            currentPage={currentPage} 
-                            totalPages={totalPages} 
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
                             handlePageChange={handlePageChange}
                         />
                     </div>
@@ -99,14 +100,12 @@ export default function TaxPage() {
                     {loading ? (
                         <Loader />
                     ) : (
-
-                    <div>
-                        <TaxTable 
-                            taxes={taxes}
-                            handleModalOpen={handleModalOpen}
-                        />
-                    </div>
-
+                        <div>
+                            <TaxTable
+                                taxes={taxes}
+                                handleModalOpen={handleModalOpen}
+                            />
+                        </div>
                     )}
                 </div>
 
@@ -119,7 +118,7 @@ export default function TaxPage() {
                     formData={formData}
                     setFormData={setFormData}
                     handleInputChange={handleInputChange}
-                    isSecondModalOpen={isSecondModalOpen} 
+                    isSecondModalOpen={isSecondModalOpen}
                 />
 
                 {/* EDIT */}
@@ -143,4 +142,17 @@ export default function TaxPage() {
             </div>
         </div>
     );
-};
+}
+
+export const getServerSideProps = wrapper.getServerSideProps(
+    (store) => async (context) => {
+        try {
+            await store.dispatch(fetchTaxesServerSide(1));
+            console.log("Success fethcing taxes on server");
+            return { props: {} };
+        } catch (error) {
+            console.error("Error fetching taxes on server:", error)
+            return { props: {} };
+        }
+    }
+);

@@ -16,7 +16,6 @@ export const loginUser = (email: string, password: string) => async (dispatch: A
         const result = await response.json();
 
         if (response.ok) {
-            // const result = await response.json();
             const token = result.data?.access_token;
             if (token) {
                 Cookies.set('authToken', token);

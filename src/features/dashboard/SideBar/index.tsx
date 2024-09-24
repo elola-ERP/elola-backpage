@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { useSidebar } from './sidebarContext';
 import { Button } from '../../base';
+import { logoutUser } from '@/src/store/auth';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/src/store/store';
 
 export default function SideBar() {
     const router = useRouter();
@@ -22,6 +25,8 @@ export default function SideBar() {
         }
     };
 
+    const dispatch = useDispatch<AppDispatch>();
+
     return (
         <div 
             className={`fixed h-screen bg-gray-6 transition-all duration-300 z-50
@@ -32,7 +37,7 @@ export default function SideBar() {
                 href={'/dashboard/home'}
             >
                 <div 
-                    className={`w-full h-[100px] bg-purple-2 p-6 flex gap-2 items-center 
+                    className={`w-full h-[100px] bg-purple-2 p-6 flex gap-4 items-center 
                     ${ isCollapsed ? 'justify-start' : 'justify-start' }`}
                 >
                         <Image
@@ -43,8 +48,8 @@ export default function SideBar() {
                         />
                         {!isCollapsed && (
                             <svg 
-                                width="100" 
-                                height="50" 
+                                width="150" 
+                                height="100" 
                                 viewBox="0 0 212 66" 
                                 fill="white"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -140,11 +145,13 @@ export default function SideBar() {
                     </div>
 
                     {/* Sub-links */}
-                    {isProductExpanded && !isCollapsed && (
+                    <div
+                        className={`transition-all duration-500 ease-in-out overflow-hidden ${isProductExpanded && !isCollapsed ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
                         <div className='border-gray-5 border-l-2 ml-6 pl-3'>
                             <Link href='/dashboard/product/category' className='w-full'>
                                 <div 
-                                    className={`pl-3 p-2 flex items-center gap-2 w-auto rounded-xl transition-transform duration-1000 
+                                    className={`pl-3 p-2 flex items-center gap-2 w-auto rounded-xl transition-opacity duration-300 ease-in-out 
                                     ${getNavLinkClass('/dashboard/product/category')}`}
                                 >
                                     <span>Category</span>
@@ -152,14 +159,14 @@ export default function SideBar() {
                             </Link>
                             <Link href='/dashboard/product/product' className='w-full'>
                                 <div 
-                                    className={`pl-3 p-2 flex items-center gap-2 w-auto rounded-xl transition-transform duration-1000 
+                                    className={`pl-3 p-2 flex items-center gap-2 w-auto rounded-xl transition-opacity duration-300 ease-in-out 
                                     ${getNavLinkClass('/dashboard/product/product')}`}
                                 >
                                     <span>Product</span>
                                 </div>
                             </Link>
                         </div>
-                    )}
+                    </div>
                 </Link>
 
                 <Link href='/dashboard/tax' className='w-full'>
@@ -342,7 +349,9 @@ export default function SideBar() {
                     </div>
 
                     {/* Sub-links */}
-                    {isReportExpanded && !isCollapsed && (
+                    <div
+                        className={`transition-all duration-500 ease-in-out overflow-hidden ${isReportExpanded && !isCollapsed ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
                         <div className='border-gray-5 border-l-2 ml-6 pl-3'>
                             <Link href='/dashboard/report/transaction' className='w-full'>
                                 <div 
@@ -389,19 +398,21 @@ export default function SideBar() {
                                     className={`pl-3 p-2 flex items-center gap-2 w-auto rounded-xl transition-transform duration-1000 
                                     ${getNavLinkClass('/dashboard/report/driverpartner')}`}
                                 >
-                                    <span>Driver Partner</span>
+                                    <span>Partner</span>
                                 </div>
                             </Link>
                         </div>
-                    )}
+                    </div>
                 </Link>
             </div>
 
             {/* LOGOUT */}
-            <div className='flex bottom-0 items-end justify-start pt-24 p-6'>
+            <div className={`fixed bottom-0 items-end justify-start pt-24 p-6 transition-all duration-300
+            ${ isCollapsed ? 'w-[100px]' : 'w-[300px]'}`}>
+                
                 <Button 
                     className='flex justify-between items-center p-0 h-[50px] bg-red-300 rounded-[10px] hover:bg-red-300/75'
-                    
+                    onClick={() => dispatch(logoutUser())}
                 >
                     <div>
                         <svg 
@@ -416,7 +427,7 @@ export default function SideBar() {
                         </svg>
                     </div>
                     <span 
-                    className={`text-xl transition px-6 text-red-500
+                    className={`text-xl transition px-6 text-red-500 
                     ${isCollapsed ? 'duration-100 ease-in opacity-0' : 'delay-300 duration-600 ease-out opacity-100'}`}
                     >
                         Log Out

@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { login, logout } from './authSlice';
 import { AppDispatch } from './store';
 
@@ -12,31 +13,35 @@ export const loginUser = (email: string, password: string) => async (dispatch: A
             }
         );
 
+        const result = await response.json();
+
         if (response.ok) {
-            const result = await response.json();
+            // const result = await response.json();
             const token = result.data?.access_token;
             if (token) {
-                localStorage.setItem('authToken', token);
+                Cookies.set('authToken', token);
                 dispatch(login({ token, user: { email } }));
-                return true;
+                return { success: true };
             }
+        } else {
+            console.log(result);    
+            return { success: false, message: result.message || 'Login failed' };
         }
         return false;
     } catch (error) {
         console.error('Login error:', error);
-        return false;
+        return { success: false, message: 'An unexpected error occurred' };
     }
 };
 
 export const logoutUser = () => (dispatch: AppDispatch) => {
-    localStorage.removeItem('authToken');
+    Cookies.remove('authToken');
     dispatch(logout());
 };
 
 export const checkAuth = () => (dispatch: AppDispatch) => {
-    const token = localStorage.getItem('authToken');
+    const token = Cookies.get('authToken');
     if (token) {
-        // You might want to validate the token with your backend here
         dispatch(login({ token, user: null }));
     }
 };

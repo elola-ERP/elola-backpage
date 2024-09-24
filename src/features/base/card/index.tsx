@@ -21,7 +21,7 @@ export function LoginCard(props: CardProps) {
   return (
     <div
       className={twMerge(
-        "p-4 w-full border-t border-b border-white/50",
+        "p-4 w-full border-t border-white/50",
         className
       )}
       {...rest}

@@ -41,3 +41,8 @@ body {
 }
 
 
+input:-webkit-autofill {
+  -webkit-background-clip: text;
+  background-color: transparent;
+  -webkit-text-fill-color: white;
+}

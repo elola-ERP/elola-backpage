@@ -4,8 +4,8 @@ import { Button } from "../base";
 export default function DashboardHome() {
     
     return (
-        <div className="w-full h-full flex flex-col justify-center items-center text-purple-1 pt-80 gap-4">
-            <h1 className="text-2xl font-semibold">Hello, welcome to</h1>
+        <div className="w-full h-full flex flex-col justify-center items-center text-purple-1 gap-4">
+            <h1 className="text-2xl font-semibold">Welcome to</h1>
             <svg 
                 width="300" 
                 height="100" 

@@ -1,16 +1,25 @@
 import { Button, CancelButton, Modal } from "@/src/features";
 import ToggleSwitch from "@/src/features/base/toggleSwitch";
+import { useState } from "react";
 import { addModalProps } from "./types";
 
 export default function AddModal({
     isAddModalOpen, 
     handleModalClose, 
     handleConfirmAdd, 
-    errors, formData, 
-    setFormData, 
+    // errors, formData, 
+    // setFormData, 
     handleInputChange, 
     isSecondModalOpen,
 }: addModalProps) {
+    const [formData, setFormData] = useState({
+        tax_name: '',
+        tax_type: '',
+        tax_value: 0,
+        service_value: 0,
+        tax_status: false,
+    });
+    
     return (
         <div>
             <Modal isOpen={isAddModalOpen} onClose={handleModalClose} onConfirm={handleConfirmAdd}>
@@ -20,7 +29,7 @@ export default function AddModal({
                     </div>
                     <form className="w-full text-center mb-6">
                         <label>Name</label>
-                        {errors.tax_name && <p className="text-red-600 text-sm">{errors.tax_name}</p>}
+                        {/* {errors.tax_name && <p className="text-red-600 text-sm">{errors.tax_name}</p>} */}
                         <input
                             type="text"
                             name="tax_name"
@@ -31,7 +40,7 @@ export default function AddModal({
                         />
 
                         <label>Type</label>
-                        {errors.tax_type && <p className="text-red-600 text-sm">{errors.tax_type}</p>}
+                        {/* {errors.tax_type && <p className="text-red-600 text-sm">{errors.tax_type}</p>} */}
                         <select
                             name="tax_type"
                             value={formData.tax_type}
@@ -44,7 +53,7 @@ export default function AddModal({
                         </select>
 
                         <label>Tax Value (%)</label>
-                        {errors.tax_value && <p className="text-red-600 text-sm">{errors.tax_value}</p>}
+                        {/* {errors.tax_value && <p className="text-red-600 text-sm">{errors.tax_value}</p>} */}
                         <input
                         type="number"
                         name="tax_value"
@@ -71,7 +80,10 @@ export default function AddModal({
                             Cancel
                         </CancelButton>
                         <Button
-                            onClick={handleConfirmAdd}
+                            onClick={
+                                () => {alert('not implemented due to error')}
+                                // handleConfirmAdd
+                            }
                         >
                             Ok
                         </Button>

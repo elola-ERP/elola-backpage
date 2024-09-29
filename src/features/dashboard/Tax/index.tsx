@@ -1,89 +1,91 @@
 import { Button } from "@/src/features";
-// import Loader from "../../base/Loader";
 import { AddModal, TaxTable } from "./components";
 import { Pagination } from "@/src/features";
-// import { TaxProps } from "./types";
-// import { GetServerSideProps } from "next";
 import { axiosInstance } from "@/src/api/axiosClient";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//     const page = context.query.page || 1;
+interface Tax {
+    tax_id: number;
+    tax_name: string;
+    tax_type: string;
+    tax_value: number;
+    service_value: number;
+    tax_status: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+interface Meta {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+}
+
+interface TaxPageProps {
+    result: {
+        taxes: Tax[];
+        meta: Meta;
+    };
+}
+
+// export const getServerSideProps = (async () => {
+//     console.log("SSR function started");
+//     const page = 1;
 //     const limit = 10;
 
 //     try {
 //         const res = await axiosInstance.get(`/tax?page=${page}&limit=${limit}`);
-//         const result = res.data;  // Make sure this response has your expected format
+//         const result = res.data;  // Ensure the correct data format here
+//         console.log("SSR fetching data", result);
 
-//         // Log the entire result object to the console
-//         console.log("SSR Fetched Data:", result); // Pretty print the response
-//         alert("SSR data fetched successfully!");
-
-//         return {
-//             props: {
-//                 initialTaxes: result.data.taxes,
-//                 initialMeta: result.data.meta,
+//         return { 
+//             props: { 
+//                 result: result.data  
 //             },
 //         };
-
 //     } catch (error) {
-//         console.error("Error fetching tax data:", error);
-
+//         console.error("Error fetching SSR data:", error);
 //         return {
 //             props: {
-//                 initialTaxes: [],
-//                 initialMeta: { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 },
-//             },
+//                 result: {
+//                     taxes: [],  // Ensure taxes is an empty array
+//                     meta: { currentPage: 3, totalPages: 1, totalItems: 0, itemsPerPage: 10 }
+//                 }
+//             }
 //         };
 //     }
-// };
-interface TaxPageProps {
-    result: {
-        taxes: Array<any>,
-        meta: {
-            currentPage: number,
-            totalPages: number,
-            totalItems: number,
-            itemsPerPage: number,
-        }
-    }
-}
+// }) satisfies GetServerSideProps<{ result: TaxPageProps}>
 
-export default function TaxPage({ message }: { message: string }) {
-    // const [initialTaxes, setInitialTaxes] = useState([]);
-    // const [initialMeta, setInitialMeta] = useState({ currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 });
-    // const [isLoading, setIsLoading] = useState(true);
-    // const [error, setError] = useState(null);
-    
+export default function TaxPage() {
     // const { 
-    //     taxes = [], 
+    //     taxes = [], // Set default to empty array
     //     meta = { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 } 
     // } = result || {};
     
+    const [taxes, setTaxes] = useState([]);
+    const [meta, setMeta] = useState({ currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 });
+    const [currentPage, setCurrentPage] = useState(meta.currentPage)
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-    // useEffect(() => {
-    //     const fetchTaxData = async () => {
-    //         const page = 1; // You can change this if you implement pagination logic
-    //         const limit = 10;
-
-    //         try {
-    //             setIsLoading(true);
-    //             const res = await axiosInstance.get(`/tax?page=${page}&limit=${limit}`);
-    //             const result = res.data;
-    //             console.log("CSR Fetched Data:", result); // Log the fetched data
-
-    //             setInitialTaxes(result.data.taxes);
-    //             setInitialMeta(result.data.meta);
-    //         } catch (error) {
-    //             console.error("Error CSR fetching tax data:", error)
-    //         } finally {
-    //             setIsLoading(false);
-    //         }
-    //     };
-
-    //     fetchTaxData();
-    // }, []);
+    const fetchTaxData = async (page: number) => {
+        const limit = meta.itemsPerPage;
+        try {
+            const res = await axiosInstance.get(`/tax?page=${page}&limit=${limit}`);
+            const result = res.data;
+            console.log("CSR Fetched Data:", result); // Log the fetched data
+            
+            setTaxes(result.data.taxes);
+            setMeta(result.data.meta);
+            setCurrentPage(result.data.meta.currentPage)
+        } catch (error) {
+            console.error("Error CSR fetching tax data:", error)
+        } 
+    };
+        
+    useEffect(() => {
+        fetchTaxData(currentPage);
+    }, [currentPage]);
 
     const handlePageChange = (page: number) => {
         console.log("Page change triggered to:", page);
@@ -120,23 +122,19 @@ export default function TaxPage({ message }: { message: string }) {
                 <div className="p-4 bg-white border border-gray-6 rounded-[10px] shadow-md">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl text-gray-2 font-semibold">Tax and Service Data</h2>
-                        {/* <Pagination 
-                            currentPage={meta?.currentPage || 1}
-                            totalPages={meta?.totalPages || 1}
-                            handlePageChange={(page) => console.log("Page change triggered to:", page)}
-                        /> */}
+                        <Pagination 
+                            currentPage={Number(meta.currentPage)}
+                            totalPages={meta.totalPages}
+                            handlePageChange={handlePageChange}
+                        />
                     </div>
 
                     {/* Display Tax Data or Error Message */}
                     <div>
-                        <div>
-                            <h1>SSR Test</h1>
-                            <p>{message}</p>
-                        </div>
-                        {/* {taxes.length === 0 ? (
+                        {taxes.length === 0 ? (
                             <div>No taxes found.</div>
                         ) : (
-                            taxes.map((tax: any) => (
+                            taxes.map((tax: Tax) => (
                                 <div key={tax.tax_id} className="p-2 border-b">
                                     <p>Tax Name: {tax.tax_name}</p>
                                     <p>Tax Type: {tax.tax_type}</p>
@@ -147,7 +145,7 @@ export default function TaxPage({ message }: { message: string }) {
                                     <p>Updated At: {new Date(tax.updated_at).toLocaleDateString()}</p>
                                 </div>
                             ))
-                        )} */}
+                        )}
                     </div>
                 </div>
 
@@ -160,45 +158,4 @@ export default function TaxPage({ message }: { message: string }) {
             </div>
         </div>
     );
-}
-
-// export async function getServerSideProps() {
-//     console.log("SSR function started");
-//     const page = 1;
-//     const limit = 10;
-
-//     try {
-//         const res = await axiosInstance.get(`/tax?page=${page}&limit=${limit}`);
-//         const result = res.data;  // Ensure the correct data format here
-//         console.log("SSR fetching data", result);
-
-//         return { 
-//             props: { 
-//                 result: result?.data || { 
-//                     taxes: [], 
-//                     meta: { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 }
-//                 },  // Pass only the necessary data
-//             },
-//         };
-//     } catch (error) {
-//         console.error("Error fetching SSR data:", error);
-//         return {
-//             props: {
-//                 result: {
-//                     taxes: [], 
-//                     meta: { currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 10 }
-//                 }
-//             }
-//         };
-//     }
-// }
-
-export async function getServerSideProps() {
-    console.log("SSR function started in Test Page");
-    
-    return {
-        props: {
-            message: "SSR is working!",
-        },
-    };
 }

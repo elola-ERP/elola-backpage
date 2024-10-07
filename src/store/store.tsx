@@ -5,7 +5,7 @@ import taxReducer from './taxSlice'
 export const store = configureStore({
     reducer: {
         auth: authReducer,
-        tax: taxReducer,
+        taxes: taxReducer,
     },
 });
 

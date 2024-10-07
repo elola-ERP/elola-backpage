@@ -16,7 +16,6 @@ export default function AddModal({
         tax_name: '',
         tax_type: '',
         tax_value: 0,
-        service_value: 0,
         tax_status: false,
     });
     

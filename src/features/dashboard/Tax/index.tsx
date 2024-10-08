@@ -2,19 +2,29 @@ import { Button } from "@/src/features";
 import { AddModal, TaxCard, TaxCardSkeleton } from "./components";
 import { Pagination } from "@/src/features";
 import { useEffect, useState } from "react";
-// import { fetchTaxData } from "./api";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/src/store/store";
 import { fetchTaxes, setCurrentPage  } from "@/src/store/taxSlice";
 
 export default function TaxPage() {
     const dispatch = useDispatch<AppDispatch>();
-    const { taxes, meta, status } = useSelector((state: RootState) => state.taxes);
+    const { taxes, meta } = useSelector((state: RootState) => state.taxes);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [showSkeleton, setShowSkeleton] = useState(true);
 
     useEffect(() => {
-        dispatch(fetchTaxes(meta.currentPage));
+        const timer = setTimeout(() => {
+            setShowSkeleton(false); // Hide skeleton after delay
+            dispatch(fetchTaxes(meta.currentPage)); // Fetch taxes after skeleton
+        }, 1000); // Delay of 1 second before fetching taxes
+    
+        return () => clearTimeout(timer); // Clean up timer on unmount
     }, [meta.currentPage, dispatch]);
+
+    const refreshTaxData = () => {
+        setShowSkeleton(false); // Hide skeleton after delay
+        dispatch(fetchTaxes(meta.currentPage)); // Fetch taxes after skelet\
+    };
 
     const handlePageChange = (page: number) => {
         dispatch(setCurrentPage(page));
@@ -25,11 +35,6 @@ export default function TaxPage() {
     };
 
     const handleModalClose = () => {
-        setIsAddModalOpen(false);
-    };
-
-    const handleConfirmAdd = (newTax: any) => {
-        console.log("New tax added:", newTax);
         setIsAddModalOpen(false);
     };
 
@@ -59,8 +64,8 @@ export default function TaxPage() {
                     </div>
 
                     {/* TAX CARD */}
-                    {status === 'loading' ? (
-                        <TaxCardSkeleton /> // Show Skeleton while loading
+                    {showSkeleton ? (
+                        <TaxCardSkeleton />
                     ) : (
                         <TaxCard taxes={taxes} />
                     )}
@@ -70,7 +75,7 @@ export default function TaxPage() {
                 <AddModal
                     isAddModalOpen={isAddModalOpen}
                     handleModalClose={handleModalClose}
-                    handleConfirmAdd={handleConfirmAdd}
+                    refreshTaxData={refreshTaxData}
                 />
             </div>
         </div>

@@ -1,33 +1,30 @@
 import Cookies from 'js-cookie';
+import { axiosInstance } from '../api/axiosClient';
 import { login, logout } from './authSlice';
 import { AppDispatch } from './store';
 
 export const loginUser = (email: string, password: string) => async (dispatch: AppDispatch) => {
     try {
-        const response = await fetch('https://salemate-be-production.up.railway.app/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-            }
-        );
+        // Perform the API call using axios
+        const response = await axiosInstance.post('/auth/login', {
+            email,
+            password,
+        });
 
-        const result = await response.json();
+        const result = response.data;
 
-        if (response.ok) {
-            const token = result.data?.access_token;
+        if (response.status === 200) {
+            const token = result?.data?.access_token;
             if (token) {
                 Cookies.set('authToken', token);
                 dispatch(login({ token, user: { email } }));
                 return { success: true };
             }
         } else {
-            console.log(result);    
+            console.log(result);
             return { success: false, message: result.message || 'Login failed' };
         }
-        return false;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Login error:', error);
         return { success: false, message: 'An unexpected error occurred' };
     }

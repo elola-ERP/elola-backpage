@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/src/api/axiosClient";
 import { Button, CancelButton, Modal } from "@/src/features";
 import ToggleSwitch from "@/src/features/base/toggleSwitch";
 import { useState } from "react";
@@ -5,134 +6,226 @@ import { addModalProps } from "./types";
 
 export default function AddModal({
     isAddModalOpen, 
-    handleModalClose, 
-    handleConfirmAdd, 
-    // errors, formData, 
-    // setFormData, 
-    handleInputChange, 
-    isSecondModalOpen,
+    handleModalClose,
+    refreshTaxData,
 }: addModalProps) {
-    const [formData, setFormData] = useState({
+    const initialFormData = {
         tax_name: '',
         tax_type: '',
         tax_value: 0,
+        service_value: 0,
         tax_status: false,
-    });
+    };
+
+    const [formData, setFormData] = useState(initialFormData);
+    const [tempFormData, setTempFormData] = useState(initialFormData); // Temp state for second modal
+    const [showResult, setShowResult] = useState(false); // Control second modal
+    const [errors, setErrors] = useState<string[]>([]); // Changed to an array for multiple errors
+    const [successMessage, setSuccessMessage] = useState<string | null>(null); // Handle success messages
+    const [loading, setLoading] = useState(false); // Loading state
+
+    // Handle input changes
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value, type } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: type === "number" ? Number(value) : value,
+        }));
+    };
+
+    // Handle form submission
+    const handleConfirmAdd = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        setLoading(true); // Set loading state
+        const newErrors: string[] = []; // Reset errors on each submission
+
+        // Validation checks
+        if (!formData.tax_name) {
+            newErrors.push("Name should not be empty");
+        }
+        if (!formData.tax_type) {
+            newErrors.push("Type must be one of the following values: service, vat");
+        }
+        // Validate based on tax type
+        if (formData.tax_type === 'vat' && (formData.tax_value < 1 || formData.tax_value > 99)) {
+            newErrors.push("VAT Value must be between 1 and 99");
+        } else if (formData.tax_type === 'service' && (formData.service_value < 1 || formData.service_value > 99)) {
+            newErrors.push("Service Value must be between 1 and 99");
+        }
+
+        if (newErrors.length > 0) {
+            setLoading(false);
+            setErrors(newErrors); // Set validation errors
+            return;
+        }
+
+        try {
+            const response = await axiosInstance.post('/tax', formData);
+            setLoading(false); // Reset loading state
+            setTempFormData(formData);
+            setShowResult(true);
+            setErrors([]); // Clear errors on success
+            setSuccessMessage(response.data.message || "Tax added successfully!"); // Set success message from backend
+        } catch (error: any) {
+            setLoading(false);
+            setErrors([error.response?.data?.message || "An error occurred. Please try again."]);
+            setSuccessMessage(null); // Clear success message on error
+        }
+    };
+
+    // Handle closing modals and refreshing data
+    const handleOkClick = () => {
+        setShowResult(false); // Close the second modal
+        handleModalClose();
+        setFormData(initialFormData); // Close the first modal (if necessary)
+        if (refreshTaxData) {
+            refreshTaxData(); // Call refreshTaxData to refresh the list
+        } // Refresh tax data after adding a new one
+    };
     
     return (
         <div>
             <Modal isOpen={isAddModalOpen} onClose={handleModalClose} onConfirm={handleConfirmAdd}>
-                    <div className="w-full flex flex-col items-center pb-10">
-                        <h2 className="text-2xl font-bold text-orange-2">Add Tax</h2>
-                        <span className="text-sm text-gray-3">Input all necesary data</span>
-                    </div>
-                    <form className="w-full text-center mb-6">
-                        <label>Name</label>
-                        {/* {errors.tax_name && <p className="text-red-600 text-sm">{errors.tax_name}</p>} */}
-                        <input
-                            type="text"
-                            name="tax_name"
-                            placeholder="Enter title name"
-                            value={formData.tax_name}
-                            onChange={handleInputChange}
-                            className="border border-gray-300 p-2 mb-4 drop-shadow-md w-full rounded-[10px]"
-                        />
+                <div className="w-full flex flex-col items-center pb-4">
+                    <h2 className="text-2xl font-bold text-orange-2">Add Tax</h2>
+                    <span className="text-sm text-gray-3">Input all necessary data</span>
+                </div>
 
-                        <label>Type</label>
-                        {/* {errors.tax_type && <p className="text-red-600 text-sm">{errors.tax_type}</p>} */}
-                        <select
-                            name="tax_type"
-                            value={formData.tax_type}
-                            onChange={handleInputChange}
-                            className="border border-gray-300 p-2 mb-4 drop-shadow-md w-full rounded-[10px]"
-                        >
-                            <option value="">Select Type</option>
-                            <option value="VAT">VAT</option>
-                            <option value="Service">Service</option>
-                        </select>
-
-                        <label>Tax Value (%)</label>
-                        {/* {errors.tax_value && <p className="text-red-600 text-sm">{errors.tax_value}</p>} */}
-                        <input
-                        type="number"
-                        name="tax_value"
-                        min="0"
-                        max="100"
-                        placeholder="Enter tax value"
-                        value={formData.tax_value}
-                        onChange={handleInputChange}
-                        className="border border-gray-300 p-2 mb-4 drop-shadow-md w-full rounded-[10px]"
-                    />
-
-                        <label>Tax Status</label>   
-                        <div className="flex w-full justify-center">
-                            <ToggleSwitch
-                                checked={formData.tax_status}
-                                onChange={() => setFormData({ ...formData, tax_status: !formData.tax_status })}
+                <form className="flex flex-col w-full text-center mb-8 p-4 bg-neutral-100 border border-neutral-200 rounded-xl gap-2">
+                    <div className="flex w-full gap-4 mb-2">
+                        <div className="w-[5.5rem] bg-neutral-200 rounded-[10px]"></div>
+                        <div className="flex flex-col w-full h-full justify-between gap-2">
+                            <div className="flex">
+                                <label>Name</label> {/* Updated label */}
+                            </div>
+                            <input
+                                type="text"
+                                name="tax_name" // Updated input name
+                                placeholder="Enter tax name"
+                                value={formData.tax_name}
+                                onChange={handleInputChange}
+                                className="border text-black border-gray-300 p-1 px-2 w-full rounded-[10px] text-2xl"
+                                autoComplete="off"
                             />
                         </div>
-                    </form>
-                    <div className="flex justify-between w-full mt-4 gap-2">
-                        <CancelButton
-                            onClick={handleModalClose}
-                        >
-                            Cancel
-                        </CancelButton>
-                        <Button
-                            onClick={
-                                () => {alert('not implemented due to error')}
-                                // handleConfirmAdd
-                            }
-                        >
-                            Ok
-                        </Button>
                     </div>
-                </Modal>
 
-                <Modal isOpen={isSecondModalOpen} onClose={handleModalClose} onConfirm={handleModalClose}>
-                        <div className="w-full flex flex-col items-center pb-10">
-                            <div className="text-green-2 flex row gap-2 justify-center items-center">
-                                <svg width="24" height="24" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path 
-                                        d="M10.3333 15.5417L13.4583 18.6667L18.6667 11.375M27 14.5C27 16.1415 26.6767 17.767 26.0485 19.2835C25.4203 20.8001 24.4996 22.1781 23.3388 23.3388C22.1781 24.4996 20.8001 25.4203 19.2835 26.0485C17.767 26.6767 16.1415 27 14.5 27C12.8585 27 11.233 26.6767 9.71646 26.0485C8.19989 25.4203 6.8219 24.4996 5.66116 23.3388C4.50043 22.1781 3.57969 20.8001 2.95151 19.2835C2.32332 17.767 2 16.1415 2 14.5C2 11.1848 3.31696 8.00537 5.66116 5.66117C8.00537 3.31696 11.1848 2 14.5 2C17.8152 2 20.9946 3.31696 23.3388 5.66117C25.683 8.00537 27 11.1848 27 14.5Z" 
-                                        stroke="currentColor" 
-                                        strokeWidth="4" 
-                                        strokeLinecap="round" 
-                                        strokeLinejoin="round"/>
-                                </svg>
-                                <h2 className="text-2xl font-bold">Tax Added</h2>
-                            </div>
-                            <span className="text-sm text-gray-3">You can update or delete this data later</span>
+                    <div className="flex gap-4 p-4 bg-white border border-neutral-200 rounded-lg">
+                        <div className="flex flex-col w-2/5 justify-between gap-2">
+                            <label>Type</label>
+                            <select
+                                name="tax_type" // Updated input name
+                                value={formData.tax_type}
+                                onChange={handleInputChange}
+                                className="border h-[40px] border-gray-300 p-1 w-full rounded-[10px] text-xl text-center"
+                            >
+                                <option value="">Select Type</option>
+                                <option value="vat">VAT</option>
+                                <option value="service">SERVICE</option>
+                            </select>
                         </div>
-                        <div className="text-gray-1 w-full flex flex-col mb-6 gap-6">
+                        <div className="flex flex-col w-1/4 justify-between">
+                            <label>Value</label>
+                            <div className="flex gap-1 items-center">
+                                {formData.tax_type === 'service' ? (
+                                    <>
+                                        <input
+                                            type="number"
+                                            name="service_value" // Use service_value when tax_type is "service"
+                                            min={1}
+                                            max={99}
+                                            step={1}
+                                            placeholder="1-99%"
+                                            value={formData.service_value} // Use service_value state
+                                            onChange={handleInputChange}
+                                            className="border h-[40px] border-gray-300 p-1 w-full rounded-[10px] text-xl text-center"
+                                        />
+                                        <span className="text-2xl">%</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <input
+                                            type="number"
+                                            name="tax_value" // Use tax_value when tax_type is "vat"
+                                            min={1}
+                                            max={99}
+                                            step={1}
+                                            placeholder="1-99%"
+                                            value={formData.tax_value} // Use tax_value state
+                                            onChange={handleInputChange}
+                                            className="border h-[40px] border-gray-300 p-1 w-full rounded-[10px] text-xl text-center"
+                                        />
+                                        <span className="text-2xl">%</span>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex flex-col w-1/4 justify-between">
+                            <label>Tax Status</label>   
+                            <div className="flex justify-center">
+                                <ToggleSwitch
+                                    checked={formData.tax_status}
+                                    onChange={() => setFormData({ ...formData, tax_status: !formData.tax_status })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </form>
 
-                            <div className="flex flex-row gap-4 justify-start">
-                                <h2 className="w-1/4 font-bold text-gray-3">Name</h2>
-                                <span>:</span>
-                                <p>{formData.tax_name}</p> 
+                {/* Display error messages as a list if present */}
+                {errors.length > 0 && (
+                    <div className="text-red-600 text-sm mb-4">
+                        <ul>
+                            {errors.map((err, index) => (
+                                <li key={index}>• {err}</li> // Display each error in a list
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                <div className="flex justify-between w-full gap-4">
+                    <CancelButton onClick={handleModalClose}>Cancel</CancelButton>
+                    <Button onClick={handleConfirmAdd} disabled={loading}>
+                        {loading ? "Adding..." : "OK"}
+                    </Button>
+                </div>
+            </Modal>
+
+            {/* Skeleton Loader */}
+            {loading && <div className="skeleton-loader pt-10 text-neutral-500">Updating...</div>}
+
+            <Modal isOpen={showResult} onClose={handleModalClose} onConfirm={handleOkClick}>
+                <div className="w-full flex flex-col items-center pb-4">
+                    <div className="text-green-2 flex row gap-2 justify-center items-center">
+                        <h2 className="text-2xl font-bold">Tax Added</h2>
+                    </div>
+                    <span className="text-sm text-gray-3">You can update or delete this data later</span>
+                </div>
+                <div className="flex flex-col w-full text-center mb-6 p-4 bg-green-100 border border-green-300 rounded-xl gap-2">
+                    <div className="flex w-full gap-4 mb-2">
+                        <div className="w-[4.5rem] bg-green-300/50 rounded-[10px]"></div>
+                        <div className="flex flex-col w-full h-full justify-between text-green-700">
+                            <div className="flex w-full justify-start">
+                                <label>Tax Name</label>
                             </div>
-                            <div className="flex flex-row gap-4 justify-start">
-                                <h2 className="w-1/4 font-bold text-gray-3">Type</h2>
-                                <span>:</span>
-                                <p>{formData.tax_type}</p> 
-                            </div>
-                            <div className="flex flex-row gap-4 justify-start">
-                                <h2 className="w-1/4 font-bold text-gray-3">Value</h2>
-                                <span>:</span>
-                                <p>{formData.tax_value}</p> 
-                            </div>
-                            <div className="flex flex-row gap-4 justify-start">
-                                <h2 className="w-1/4 font-bold text-gray-3">Status</h2>
-                                <span>:</span>
-                                <p>{formData.tax_status ? "ON" : "OFF"}</p> 
-                            </div>
+                            <h1 className="-mt-2 text-left text-4xl font-bold">{tempFormData.tax_name}</h1> {/* Updated */}
                         </div>
-                        <Button
-                            onClick={handleModalClose}
-                        >
-                            Ok
-                        </Button>
-                </Modal>
+                    </div>
+                    <div className="flex gap-4 p-4 bg-white rounded-lg text-left text-neutral-700">
+                        <div className="flex flex-col w-full justify-between">
+                            <label>Type :</label>
+                            <h1 className="text-4xl font-bold uppercase">{tempFormData.tax_type}</h1> {/* Updated */}
+                        </div>
+                        <div className="flex flex-col w-full justify-between">
+                            <label>Value :</label>
+                            <h1 className="text-4xl font-bold">{tempFormData.tax_type === 'service' ? tempFormData.service_value : tempFormData.tax_value}%</h1>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex w-full justify-center">
+                    <Button className="w-2/3" onClick={handleOkClick}>OK</Button>
+                </div>
+            </Modal>
         </div>
     );
-};
+}

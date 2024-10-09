@@ -5,12 +5,10 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import Cookies from "js-cookie";
 import { token } from "@/src/config";
-import { useTransactionContext } from "@/src/context";
 
 export function PinForm() {
     const [pin, setPin] = useState('');
     const router = useRouter();
-    const { setUsername } = useTransactionContext();
 
     const handleButtonClick = (value: string) => {
         if (pin.length < 6) {
@@ -38,17 +36,17 @@ export function PinForm() {
                 body: JSON.stringify({ pin }),
             });
 
-            console.log('Response: ', response)
-
             if (response.ok) {
-              // On successful login, redirect to the /superadmin page
                 const data = await response.json();
-                const {access_token} = data.data
-                Cookies.set(token, access_token)
-                const { user_name } = data.data
-                setUsername(user_name)
-                console.log ('data: ', data)
-                console.log('Login successful, redirecting...');  
+                const { access_token, user_name } = data.data;
+
+                // Set token in cookies
+                Cookies.set(token, access_token);
+
+                // You can set the username in a different way if needed
+                console.log('Username:', user_name);
+                
+                // Redirect to POS home
                 router.push('/pos/pos-home');
             } else {
                 const errorData = await response.json();
@@ -58,12 +56,10 @@ export function PinForm() {
             console.error('An error occurred during login:', error);
         }
     };
-    
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-[#A5BE6A] p-6">
             <div className="flex flex-col items-center justify-center rounded-lg p-6 w-full max-w-md">
-
                 <Card className="mb-8 flex items-center justify-center space-x-4">
                     {[...Array(6)].map((_, index) => (
                         <div 
@@ -170,7 +166,6 @@ export function PinForm() {
                         </div>
                     </div>
                 </Card>
-
             </div>
         </div>
     );

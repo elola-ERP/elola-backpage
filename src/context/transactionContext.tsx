@@ -114,7 +114,7 @@ export function TransactionContextProvider({children}: PropsWithChildren<{}>) {
 export function useTransactionContext() {
     const context = useContext(TransactionContext);
     if (!context) {
-      throw new Error ('TransactionContext must be used within a TransactionProvider');
+        throw new Error ('TransactionContext must be used within a TransactionProvider');
     }
     return context;
 }

@@ -1,5 +1,5 @@
 import { twMerge } from "tailwind-merge";
-import { CardProps } from "../Card/type";
+import { CardProps } from "./type";
 
 export function Card(props: CardProps) {
   const { children, className, ...rest } = props;

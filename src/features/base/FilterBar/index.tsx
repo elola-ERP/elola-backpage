@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../button';
+import { Button } from '../Button';
 import { FilterBarProps, FilterField } from './type';
 
 export const FilterBar: React.FC<FilterBarProps> = ({

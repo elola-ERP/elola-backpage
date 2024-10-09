@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes } from "react";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  containerClassName?: string;
+  children: React.ReactNode;
+  ClassName?: string;
 };

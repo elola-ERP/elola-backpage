@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '../Button';
+// import { Button } from '../Button';
 import { FilterBarProps, FilterField } from './type';
 
 export const FilterBar: React.FC<FilterBarProps> = ({
@@ -52,14 +52,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                     )}
                 </div>
             ))}
-            <div className="flex w-1/2 items-end">
+            {/* <div className="flex w-1/2 items-end">
                 <Button
                     className="flex justify-center items-center h-9 rounded-[5px]"
                     onClick={handleFilterClick}
                 >
                     Filter
                 </Button>
-            </div>
+            </div> */}
         </div>
     );
 };

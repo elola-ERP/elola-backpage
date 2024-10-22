@@ -4,15 +4,21 @@ import { Pagination } from "@/src/features";
 import { useEffect, useState } from "react";
 import { Tax } from "./types";
 import { axiosInstance } from "@/src/api/axiosClient";
+import Loader from "../../base/Loader";
 
 export default function TaxPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [taxes, setTaxes] = useState<Tax[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(true);
     
     const refreshTaxData = async () => {
         try {
+            setLoading(true)
+            console.log("Loading started");
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
             const response = await axiosInstance.get(`/tax?page=${currentPage}&limit=9`);
             const taxData = Object.values(response.data.data.taxes);
             setTaxes(taxData as Tax[]);
@@ -22,6 +28,9 @@ export default function TaxPage() {
             setCurrentPage(Number(meta.current_page));  // Set current page
         } catch (error) {
             console.error("Error fetching tax data:", error);
+        } finally {
+            setLoading(false);
+            console.log("Loading finished");
         }
     };
 
@@ -65,8 +74,12 @@ export default function TaxPage() {
                         />
                     </div>
 
-                    {/* TAX CARD */}
-                    <TaxCard taxes={taxes} />
+                    {loading ? (
+                        <Loader />
+                    ) : (
+                        <TaxCard taxes={taxes} />
+                    )}
+
                 </div>
 
                 {/* Add Modal */}

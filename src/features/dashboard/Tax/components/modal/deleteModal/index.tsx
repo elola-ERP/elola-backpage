@@ -1,28 +1,26 @@
-import { CancelButton, DeleteButton, Modal } from "@/src/features";
-import { deleteModalProps } from "./types";
+import { DeleteModalProps } from "./types";
 
-export default function DeleteModal({isDeleteModalOpen, handleModalClose, selectedTax, handleConfirmDelete}: deleteModalProps) {
+export default function DeleteModal({
+    isDeleteModalOpen,
+    handleDeleteCancel,
+    handleDeleteConfirm,
+}: DeleteModalProps) {
+    if (!isDeleteModalOpen) return null;
+
     return (
-        <div>
-            <Modal isOpen={isDeleteModalOpen} onClose={handleModalClose} onConfirm={handleModalClose}>
-                <div className="w-full flex flex-col items-center">
-                    <h2 className="text-2xl font-bold text-orange-2">Confirm Delete</h2>
-                    <span className="text-gray-2">Are you sure you want to delete</span>
-                </div>
-                <h2 className="p-6 text-2xl text-bold text-gray-1">{selectedTax?.tax_name}</h2>
-                <div className="flex justify-between w-full mt-4 gap-2">
-                    <CancelButton 
-                        onClick={handleModalClose}
-                    >
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h2 className="text-lg font-semibold mb-4">Delete Tax</h2>
+                <p className="mb-4">Are you sure you want to delete this tax?</p>
+                <div className="flex justify-between">
+                    <button onClick={handleDeleteCancel} className="bg-gray-500 text-white p-2 rounded">
                         Cancel
-                    </CancelButton>
-                    <DeleteButton
-                        onClick={handleConfirmDelete}
-                    >
+                    </button>
+                    <button onClick={handleDeleteConfirm} className="bg-red-500 text-white p-2 rounded">
                         Delete
-                    </DeleteButton>
+                    </button>
                 </div>
-            </Modal>
+            </div>
         </div>
     );
-};
+}

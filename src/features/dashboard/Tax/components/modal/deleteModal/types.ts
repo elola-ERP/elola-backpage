@@ -1,6 +1,5 @@
-export interface deleteModalProps {
-    isDeleteModalOpen?: any;
-    handleModalClose?: any;
-    selectedTax?: any;
-    handleConfirmDelete?: any;
+export interface DeleteModalProps {
+    isDeleteModalOpen: boolean;
+    handleDeleteConfirm: () => void;
+    handleDeleteCancel: () => void;
 }

@@ -17,8 +17,8 @@ export default function TaxPage() {
         try {
             setLoading(true)
             console.log("Loading started");
-            await new Promise((resolve) => setTimeout(resolve, 1000));
 
+                await new Promise((resolve) => setTimeout(resolve, 1000));
             const response = await axiosInstance.get(`/tax?page=${currentPage}&limit=9`);
             const taxData = Object.values(response.data.data.taxes);
             setTaxes(taxData as Tax[]);
@@ -77,7 +77,10 @@ export default function TaxPage() {
                     {loading ? (
                         <Loader />
                     ) : (
-                        <TaxCard taxes={taxes} />
+                        <TaxCard 
+                            taxes={taxes}
+                            refreshTaxData={refreshTaxData} 
+                        />
                     )}
 
                 </div>

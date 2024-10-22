@@ -192,6 +192,7 @@ export default function DriverPartnerPage() {
         <div className="w-full flex flex-col items-center">
             <div className="w-full">
 
+                {/* HEADER */}
                 <div className="flex justify-between items-center pt-20 mb-4 gap-6">
                     <div className="text-gray-2">
                         <h2 className="text-xl font-bold">Driver Partner</h2>
@@ -200,6 +201,7 @@ export default function DriverPartnerPage() {
                     <Button className="bg-orange-2 h-full w-48 text-white rounded" onClick={() => handleModalOpen('add')}>+ Add Driver Partner</Button>
                 </div>
 
+                {/* TABLE */}
                 <div className="p-4 bg-white border border-gray-6 rounded-[10px] shadow-md">
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-xl text-gray-2 font-semibold">Staff Data</h2>

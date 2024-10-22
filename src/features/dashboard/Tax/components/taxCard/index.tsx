@@ -12,7 +12,7 @@ export default function TaxCard({taxes}: {taxes: Tax[]}) {
     return (
         <div className="grid grid-cols-3 gap-4">
             {taxes.map((tax: Tax, index: number) => {
-                console.log("rendering tax:", tax)
+                console.log("rendering tax:", tax)  
                 const theme = colorThemes[index % colorThemes.length];
                 return (
                     <div key={tax.tax_id} className={`w-full p-3 ${theme.cardBG} rounded-[5px]`}>

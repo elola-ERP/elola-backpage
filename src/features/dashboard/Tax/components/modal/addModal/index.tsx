@@ -21,7 +21,6 @@ export default function AddModal({
     const [tempFormData, setTempFormData] = useState(initialFormData); // Temp state for second modal
     const [showResult, setShowResult] = useState(false); // Control second modal
     const [errors, setErrors] = useState<string[]>([]); // Changed to an array for multiple errors
-    const [successMessage, setSuccessMessage] = useState<string | null>(null); // Handle success messages
     const [loading, setLoading] = useState(false); // Loading state
 
     // Handle input changes
@@ -65,11 +64,9 @@ export default function AddModal({
             setTempFormData(formData);
             setShowResult(true);
             setErrors([]); // Clear errors on success
-            setSuccessMessage(response.data.message || "Tax added successfully!"); // Set success message from backend
         } catch (error: any) {
             setLoading(false);
             setErrors([error.response?.data?.message || "An error occurred. Please try again."]);
-            setSuccessMessage(null); // Clear success message on error
         }
     };
 

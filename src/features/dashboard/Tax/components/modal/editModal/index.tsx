@@ -28,16 +28,48 @@ export default function EditModal({
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-        setFormData(prevState=> ({
-            ...prevState,
-            [name]: type === "number" ? Number(value) : value,
-        }));
+        if (name === "tax_type") {
+            setFormData(prevState => ({
+                ...prevState,
+                tax_type: value,  // Update tax_type
+                tax_value: value === "vat" ? 0 : prevState.tax_value,  // Keep tax_value if type is 'vat'
+                service_value: value === "service" ? 0 : prevState.service_value,  // Keep service_value if type is 'service'
+            }));
+        } else {
+            setFormData(prevState => ({
+                ...prevState,
+                [name]: type === "number" ? Number(value) : value,
+            }));
+        }
     };
 
     const handleUpdateTax = async (e: React.MouseEvent) => {
+        const newErrors: string[] = [];
+        
+        if (formData.tax_type === 'vat' && formData.tax_value === 0) {
+            newErrors.push("VAT value cannot be 0.");
+        }
+
+        if (formData.tax_type === 'service' && formData.service_value === 0) {
+            newErrors.push("Service value cannot be 0.");
+        }
+
+        if (newErrors.length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        
+        const updatedData: Partial<TaxFormData> = {};
+        if (formData.tax_name !== initialFormData.tax_name) updatedData.tax_name = formData.tax_name;
+        if (formData.tax_type !== initialFormData.tax_type) updatedData.tax_type = formData.tax_type;
+        if (formData.tax_value !== initialFormData.tax_value) updatedData.tax_value = formData.tax_value;
+        if (formData.service_value !== initialFormData.service_value) updatedData.service_value = formData.service_value;
+        if (formData.tax_status !== initialFormData.tax_status) updatedData.tax_status = formData.tax_status;
+        
         try {
-            await axiosInstance.patch(`/tax/${taxData.tax_id}`, formData); // Assuming taxData has an `id`
-            setLoading(false);
+            console.log("Form Data:", formData);
+            await axiosInstance.patch(`/tax/${taxData.tax_id}`, updatedData); // Assuming taxData has an `id`
+            setLoading(true);
             setShowResult(true);
             setErrors([]);
             if (refreshTaxData) {
@@ -178,7 +210,7 @@ export default function EditModal({
                     <Button onClick={handleUpdateTax} disabled={loading}>
                         {loading ? "Updating..." : "Update"}
                     </Button>
-                    <Button onClick={handleOpenDeleteModal} className="bg-red-500 text-white">
+                    <Button onClick={handleOpenDeleteModal} className="bg-red-500 hover:bg-red-700 text-white">
                         Delete
                     </Button>
                 </div>
